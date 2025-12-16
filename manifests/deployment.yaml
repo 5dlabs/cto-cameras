@@ -96,19 +96,3 @@ spec:
     targetPort: metrics
     protocol: TCP
   type: ClusterIP
----
-apiVersion: monitoring.coreos.com/v1
-kind: ServiceMonitor
-metadata:
-  name: camera-recorder
-  namespace: camera-system
-  labels:
-    app: camera-recorder
-spec:
-  selector:
-    matchLabels:
-      app: camera-recorder
-  endpoints:
-  - port: metrics
-    interval: 30s
-    path: /metrics
