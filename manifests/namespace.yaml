@@ -4,5 +4,8 @@ kind: Namespace
 metadata:
   name: camera-system
   labels:
-    name: camera-system
-    platform.5dlabs.io/log-collection: enabled
+    app.kubernetes.io/name: camera-system
+    # Allow privileged pods for hostNetwork access to cameras
+    pod-security.kubernetes.io/enforce: privileged
+    pod-security.kubernetes.io/audit: privileged
+    pod-security.kubernetes.io/warn: privileged
