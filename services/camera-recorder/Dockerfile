@@ -1,5 +1,5 @@
-# Simple single-stage build
-FROM rust:1.84-bookworm
+# Use Rust nightly for edition2024 support (required by base64ct)
+FROM rustlang/rust:nightly-bookworm
 
 # Install FFmpeg
 RUN apt-get update && \
