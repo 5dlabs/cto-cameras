@@ -1,0 +1,34 @@
+# Runtime-only Dockerfile using pre-built binary
+# Build: docker build -f Dockerfile.local -t camera-recorder:latest .
+
+FROM debian:bookworm-slim
+
+# Install FFmpeg and CA certificates
+RUN apt-get update && \
+    apt-get install -y \
+    ffmpeg \
+    ca-certificates \
+    && rm -rf /var/lib/apt/lists/*
+
+# Create non-root user
+RUN useradd -m -u 1000 recorder && \
+    mkdir -p /tmp/camera-recordings && \
+    chown -R recorder:recorder /tmp/camera-recordings
+
+WORKDIR /app
+
+# Copy pre-built binary
+COPY target/release/camera-recorder /app/camera-recorder
+
+# Switch to non-root user
+USER recorder
+
+# Expose metrics port
+EXPOSE 9090
+
+# Set default environment
+ENV RUST_LOG=info
+ENV TEMP_DIR=/tmp/camera-recordings
+
+# Run the service
+ENTRYPOINT ["/app/camera-recorder"]

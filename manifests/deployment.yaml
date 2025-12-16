@@ -1,0 +1,114 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: camera-recorder
+  namespace: camera-system
+  labels:
+    app: camera-recorder
+    platform.5dlabs.io/log-collection: enabled
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: camera-recorder
+  template:
+    metadata:
+      labels:
+        app: camera-recorder
+        platform.5dlabs.io/log-collection: enabled
+      annotations:
+        logs.platform.5dlabs.io/collect: "true"
+        logs.platform.5dlabs.io/service: camera-recorder
+    spec:
+      # Use host network to access cameras on local network
+      hostNetwork: true
+      dnsPolicy: ClusterFirstWithHostNet
+      
+      # Image pull secrets for GHCR
+      imagePullSecrets:
+      - name: ghcr-pull-secret
+      
+      containers:
+      - name: recorder
+        image: ghcr.io/5dlabs/cto-cameras/camera-recorder:latest
+        imagePullPolicy: Always
+        
+        envFrom:
+        - configMapRef:
+            name: camera-recorder-config
+        - secretRef:
+            name: camera-recorder-secrets
+        
+        ports:
+        - name: metrics
+          containerPort: 9090
+          protocol: TCP
+        
+        resources:
+          requests:
+            cpu: 500m
+            memory: 512Mi
+          limits:
+            cpu: 2000m
+            memory: 2Gi
+        
+        volumeMounts:
+        - name: temp-storage
+          mountPath: /tmp/camera-recordings
+        
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: metrics
+          initialDelaySeconds: 30
+          periodSeconds: 30
+          timeoutSeconds: 5
+          failureThreshold: 3
+        
+        readinessProbe:
+          httpGet:
+            path: /ready
+            port: metrics
+          initialDelaySeconds: 10
+          periodSeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 3
+      
+      volumes:
+      - name: temp-storage
+        emptyDir:
+          sizeLimit: 20Gi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: camera-recorder
+  namespace: camera-system
+  labels:
+    app: camera-recorder
+spec:
+  selector:
+    app: camera-recorder
+  ports:
+  - name: metrics
+    port: 9090
+    targetPort: metrics
+    protocol: TCP
+  type: ClusterIP
+---
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: camera-recorder
+  namespace: camera-system
+  labels:
+    app: camera-recorder
+spec:
+  selector:
+    matchLabels:
+      app: camera-recorder
+  endpoints:
+  - port: metrics
+    interval: 30s
+    path: /metrics

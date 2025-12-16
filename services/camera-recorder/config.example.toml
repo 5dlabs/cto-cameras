@@ -1,0 +1,32 @@
+[service]
+metrics_port = 9090
+
+[storage]
+endpoint = "http://seaweedfs-filer.seaweedfs.svc.cluster.local:8333"
+bucket = "camera-recordings"
+region = "us-east-1"
+access_key_id = "your-access-key"
+secret_access_key = "your-secret-key"
+
+[[cameras]]
+id = "camera-1"
+name = "Front Camera"
+rtsp_url = "rtsp://5dlabs:jechaz-0mujba-diwwYh@192.168.1.97:554/stream1"
+segment_duration_secs = 900  # 15 minutes
+
+[[cameras]]
+id = "camera-2"
+name = "Back Camera"
+rtsp_url = "rtsp://5dlabs2:qyfpev-1gukko-Qowjej@192.168.1.13:554/stream1"
+segment_duration_secs = 900  # 15 minutes
+
+[recording]
+temp_dir = "/tmp/camera-recordings"
+local_retention_minutes = 60
+video_codec = "copy"
+audio_codec = "aac"
+
+[upload]
+max_concurrent = 4
+max_retries = 5
+retry_backoff_secs = 5

@@ -1,0 +1,8 @@
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: camera-system
+  labels:
+    name: camera-system
+    platform.5dlabs.io/log-collection: enabled

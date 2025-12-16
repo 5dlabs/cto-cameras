@@ -1,0 +1,14 @@
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: camera-recorder-config
+  namespace: camera-system
+data:
+  METRICS_PORT: "9090"
+  S3_ENDPOINT: "http://seaweedfs-filer.seaweedfs.svc.cluster.local:8333"
+  S3_BUCKET: "camera-recordings"
+  S3_REGION: "us-east-1"
+  TEMP_DIR: "/tmp/camera-recordings"
+  MAX_CONCURRENT_UPLOADS: "4"
+  RUST_LOG: "info,camera_recorder=debug"
